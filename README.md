@@ -65,13 +65,10 @@ Toplantılarda konuşulanları canlı mikrofon veya ses kaydı üzerinden **Spee
 ### 4. 📋 Toplantı Listesi (`/meetings`)
 ![Toplantılar Sayfası](docs/images/meetings_page_1789573205931.png)
 
-### 5. 🗣️ Konuşmacı Ayrımı & Not Alma (Speaker Diarization)
-![Konuşmacı Ayrımı](docs/images/transcript_diarization_1789573472548.png)
-
-### 6. 🔐 Turkcell Giriş Ekranı (JWT Auth)
+### 5. 🔐 Turkcell Giriş Ekranı (JWT Auth)
 ![Giriş Ekranı](docs/images/login_page_1789474537730.png)
 
-### 7. 🛠️ Backend Swagger API Dokümantasyonu
+### 6. 🛠️ Backend Swagger API Dokümantasyonu
 ![Swagger API](docs/images/swagger_api_page_1789474687577.png)
 
 ---
