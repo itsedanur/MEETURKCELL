@@ -1,6 +1,6 @@
 import React from 'react';
 import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Box } from '@mui/material';
-import { Dashboard, MeetingRoom, Assignment } from '@mui/icons-material';
+import { Dashboard, MeetingRoom, Assignment, VideoCall } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const drawerWidth = 240;
@@ -11,6 +11,7 @@ export const Sidebar = () => {
 
   const menuItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
+    { text: 'Canlı Toplantı Odası', icon: <VideoCall />, path: '/meetings/live' },
     { text: 'Toplantılar', icon: <MeetingRoom />, path: '/meetings' },
     { text: 'Aksiyonlarım', icon: <Assignment />, path: '/my-actions' }
   ];

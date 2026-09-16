@@ -55,7 +55,7 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings?.SecretKey ?? "")),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings?.SecretKey ?? "")),
         ValidateIssuer = true,
         ValidIssuer = jwtSettings?.Issuer,
         ValidateAudience = true,
@@ -122,6 +122,15 @@ builder.Services.AddValidatorsFromAssemblyContaining<TurkcellMeetingAssistant.Ap
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 
+// CORS configuration
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader());
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
@@ -172,6 +181,7 @@ if (app.Environment.IsDevelopment())
     await SeedDatabaseAsync(app);
 }
 
+app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
@@ -244,6 +254,139 @@ async Task SeedDatabaseAsync(WebApplication app)
                         CreatedAt = DateTime.UtcNow
                     });
                 }
+            }
+
+            // Seed Sample Meetings if none exist
+            if (!await context.Meetings.AnyAsync())
+            {
+                var demoUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "user@meetingassistant.local");
+                var adminUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "admin@meetingassistant.local");
+                var userId = demoUser?.Id ?? Guid.NewGuid();
+
+                var meeting1 = new Meeting
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Turkcell 5G Altyapı ve AI Asistan Entegrasyonu",
+                    Description = "5G şebeke optimizasyonu ve Yapay Zeka destekli toplantı özetleme asistanının canlıya geçiş planlaması.",
+                    OrganizerUserId = userId,
+                    MeetingDate = DateTime.UtcNow.AddDays(-1).Date,
+                    StartTime = new TimeSpan(10, 0, 0),
+                    EndTime = new TimeSpan(11, 0, 0),
+                    Status = MeetingStatus.Approved,
+                    CreatedAt = DateTime.UtcNow.AddDays(-1)
+                };
+
+                var meeting2 = new Meeting
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Mobil & Web Uygulaması Sprint Değerlendirmesi",
+                    Description = "Turkcell Meeting Assistant projesinin frontend arayüz geliştirmeleri ve staj defteri dokümantasyonu.",
+                    OrganizerUserId = userId,
+                    MeetingDate = DateTime.UtcNow.Date,
+                    StartTime = new TimeSpan(14, 0, 0),
+                    EndTime = new TimeSpan(15, 0, 0),
+                    Status = MeetingStatus.Draft,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                context.Meetings.AddRange(meeting1, meeting2);
+
+                // Add Participants
+                var p1 = new MeetingParticipant
+                {
+                    Id = Guid.NewGuid(),
+                    MeetingId = meeting1.Id,
+                    FullName = "Edanur Ünal",
+                    Email = "user@meetingassistant.local",
+                    Department = "Yazılım Geliştirme",
+                    Title = "Yazılım Stajyeri",
+                    IsOrganizer = true,
+                    IsRequired = true,
+                    CreatedAt = DateTime.UtcNow.AddDays(-1)
+                };
+
+                var p2 = new MeetingParticipant
+                {
+                    Id = Guid.NewGuid(),
+                    MeetingId = meeting1.Id,
+                    FullName = "Sistem Yöneticisi",
+                    Email = "admin@meetingassistant.local",
+                    Department = "Bilgi Teknolojileri",
+                    Title = "Kıdemli Mimar",
+                    IsOrganizer = false,
+                    IsRequired = true,
+                    CreatedAt = DateTime.UtcNow.AddDays(-1)
+                };
+
+                context.MeetingParticipants.AddRange(p1, p2);
+
+                // Add AI Summary for Meeting 1
+                var summary1 = new MeetingSummary
+                {
+                    Id = Guid.NewGuid(),
+                    MeetingId = meeting1.Id,
+                    MeetingPurpose = "5G Altyapı optimizasyon stratejisini belirlemek ve AI Asistan entegrasyon durumunu incelemek.",
+                    ExecutiveSummary = "Turkcell 5G baz istasyonlarında AI destekli yük dengeleme sistemi başarıyla test edildi. Toplantı asistanı modülü canlı ortama entegre edildi ve otomatik aksiyon maddeleri üretildi.",
+                    Version = 1,
+                    IsApproved = true,
+                    ApprovedAt = DateTime.UtcNow.AddDays(-1),
+                    ApprovedByUserId = userId,
+                    AiProvider = "MockOpenAI",
+                    PromptVersion = "v1.0",
+                    CreatedAt = DateTime.UtcNow.AddDays(-1)
+                };
+
+                context.MeetingSummaries.Add(summary1);
+
+                // Add Action Items for Meeting 1
+                context.ActionItems.AddRange(
+                    new ActionItem
+                    {
+                        Id = Guid.NewGuid(),
+                        MeetingId = meeting1.Id,
+                        MeetingSummaryId = summary1.Id,
+                        OwnerName = "Edanur Ünal",
+                        OwnerEmail = "user@meetingassistant.local",
+                        Description = "Staj defteri için projenin canlı sistem ekran görüntülerini derle ve rapora ekle.",
+                        DueDate = DateTime.UtcNow.AddDays(1),
+                        Status = ActionItemStatus.InProgress,
+                        Priority = ActionPriority.High,
+                        ConfidenceScore = 0.95m,
+                        SourceType = SourceType.AI,
+                        CreatedAt = DateTime.UtcNow.AddDays(-1)
+                    },
+                    new ActionItem
+                    {
+                        Id = Guid.NewGuid(),
+                        MeetingId = meeting1.Id,
+                        MeetingSummaryId = summary1.Id,
+                        OwnerName = "Edanur Ünal",
+                        OwnerEmail = "user@meetingassistant.local",
+                        Description = "Frontend UI temasını Turkcell kurumsal renk paletine (Lacivert #002C5F & Sarı #FFC72C) göre optimize et.",
+                        DueDate = DateTime.UtcNow,
+                        Status = ActionItemStatus.Completed,
+                        CompletedAt = DateTime.UtcNow,
+                        Priority = ActionPriority.Medium,
+                        ConfidenceScore = 0.98m,
+                        SourceType = SourceType.AI,
+                        CreatedAt = DateTime.UtcNow.AddDays(-1)
+                    },
+                    new ActionItem
+                    {
+                        Id = Guid.NewGuid(),
+                        MeetingId = meeting1.Id,
+                        MeetingSummaryId = summary1.Id,
+                        OwnerName = "Sistem Yöneticisi",
+                        OwnerEmail = "admin@meetingassistant.local",
+                        Description = "PostgreSQL veritabanı performansını incele ve indeks tanımlamalarını kontrol et.",
+                        DueDate = DateTime.UtcNow.AddDays(3),
+                        Status = ActionItemStatus.Open,
+                        Priority = ActionPriority.Low,
+                        ConfidenceScore = 0.90m,
+                        SourceType = SourceType.Manual,
+                        CreatedAt = DateTime.UtcNow.AddDays(-1)
+                    }
+                );
             }
 
             await context.SaveChangesAsync();

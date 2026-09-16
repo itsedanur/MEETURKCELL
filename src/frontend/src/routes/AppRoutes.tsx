@@ -10,6 +10,9 @@ import { MeetingList } from '../features/meetings/components/MeetingList';
 import { MeetingCreate } from '../features/meetings/components/MeetingCreate';
 import { MeetingDetail } from '../features/meetings/components/MeetingDetail';
 
+import { MyActionsPage } from '../pages/MyActionsPage';
+import { LiveMeetingRoom } from '../pages/LiveMeetingRoom';
+
 export const AppRoutes = () => {
   return (
     <Routes>
@@ -27,7 +30,9 @@ export const AppRoutes = () => {
           
           <Route path="/meetings" element={<MeetingList />} />
           <Route path="/meetings/new" element={<MeetingCreate />} />
+          <Route path="/meetings/live" element={<LiveMeetingRoom />} />
           <Route path="/meetings/:id" element={<MeetingDetail />} />
+          <Route path="/my-actions" element={<MyActionsPage />} />
           
         </Route>
       </Route>

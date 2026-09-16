@@ -29,8 +29,9 @@ export const Login = () => {
   const loginMutation = useMutation({
     mutationFn: (data: LoginRequest) => authApi.login(data),
     onSuccess: (response) => {
-      if (response.success && response.data) {
-        login(response.data.token, response.data.user);
+      if (response.isSuccess && response.data) {
+        const token = response.data.accessToken || response.data.token || '';
+        login(token, response.data.user);
         const from = location.state?.from?.pathname || '/dashboard';
         navigate(from, { replace: true });
       }

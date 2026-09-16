@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           // Verify token by calling /api/auth/me
           const response = await apiClient.get<ApiResponse<User>>('/auth/me');
-          if (response.data.success && response.data.data) {
+          if (response.data.isSuccess && response.data.data) {
             setUser(response.data.data);
             setIsAuthenticated(true);
           } else {
